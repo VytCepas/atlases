@@ -1,0 +1,11 @@
+#!/bin/sh
+# pre-commit — the public site never takes a page the guard refuses.
+# Enable once per clone: git config core.hooksPath .githooks
+set -eu
+ROOT=$(git rev-parse --show-toplevel)
+sh "$ROOT/tests/guard-test.sh" > /dev/null || { echo "pre-commit: guard tests failed; run sh tests/guard-test.sh" >&2; exit 1; }
+files=$(git diff --cached --name-only --diff-filter=ACM -- 'docs/*.html' 'docs/**/*.html')
+[ -z "$files" ] && exit 0
+cd "$ROOT"
+# shellcheck disable=SC2086
+sh bin/guard.sh $files
